@@ -35,16 +35,27 @@ int main(int argc, char** argv)
       QObject::tr("Specify custom address to read values from."),"address");
   parser.addOption(dolphinAddressOption);
 
+  const QCommandLineOption dolphinAddressValueOption(
+      QStringList() << "q" << "value",
+      QObject::tr("The expected value when the address is read."),"value");
+  parser.addOption(dolphinAddressValueOption);
+
   parser.process(app);
 
   const QString dolphinProcessName{parser.value(dolphinProcessNameOption)};
   const QString dolphinAddressName{parser.value(dolphinAddressOption)};
+  const QString dolphinAddressValue{parser.value(dolphinAddressValueOption)};
   if (!dolphinProcessName.isEmpty())
   {
     qputenv("DME_DOLPHIN_PROCESS_NAME", dolphinProcessName.toStdString().c_str());
   }
 
   if (!dolphinAddressName.isEmpty()) {
+    if (dolphinAddressValue.isEmpty()) {
+      qDebug() << "Expected value is required when reading from a specific address.";
+      return 1;
+    }
+
     DolphinComm::DolphinAccessor::hook();
     if (DolphinComm::DolphinAccessor::getStatus() != DolphinComm::DolphinAccessor::DolphinStatus::hooked) {
       qDebug() << "Failed to hook to Dolphin.";
@@ -60,14 +71,16 @@ int main(int argc, char** argv)
     DolphinComm::DolphinAccessor::readFromRAM(offset, crashFlagBuffer, 4, true);
     std::memcpy(&crashFlag, crashFlagBuffer, sizeof(u32));
 
-    qDebug() << "Crash flag: " << crashFlag;
+    u32 expectedValue = static_cast<u32>(std::stoul(dolphinAddressValue.toStdString(), nullptr, 16));
 
-    if (crashFlag == 1) {
-      // if this is 1 then myExceptionCallback ran
-      qDebug() << "Game crashed!";
+    if (crashFlag != expectedValue) {
+      qDebug() << "Values don't match! Expected: " << expectedValue << " Got: " << crashFlag;
+      qDebug() << "Exiting!";
       return 1;
+    } else {
+      qDebug() << "Values match!";
+      return 0;
     }
-    return 0;
   } else {
 
     MainWindow window;
