@@ -142,10 +142,12 @@ bool LinuxDolphinProcess::readFromRAM(const u32 offset, char* buffer, const size
   u64 RAMAddress = 0;
   if (m_ARAMAccessible)
   {
-    if (offset >= Common::ARAM_FAKESIZE)
+    if (offset >= Common::ARAM_FAKESIZE) {
       RAMAddress = m_emuRAMAddressStart + offset - Common::ARAM_FAKESIZE;
-    else
-      RAMAddress = m_emuARAMAdressStart + offset;
+    } else {
+      RAMAddress = m_emuRAMAddressStart + offset;
+    }
+      
   }
   else if (offset >= (Common::MEM2_START - Common::MEM1_START))
   {
