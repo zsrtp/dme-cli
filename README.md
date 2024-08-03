@@ -1,6 +1,6 @@
 # dme-cli
 
-A modified version of [dolphin-memory-engine](https://github.com/aldelaro5/dolphin-memory-engine) that adds support to read a u32 address from the CLI.
+A modified version of [dolphin-memory-engine](https://github.com/aldelaro5/dolphin-memory-engine) that adds support to read a u32 value from an address using the CLI and see if it matches a target input value.
 
 ## Example usage
 
